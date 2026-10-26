@@ -1,4 +1,5 @@
 """Leave module public contract surface (ADR-0013)."""
+
 from __future__ import annotations
 
 import datetime

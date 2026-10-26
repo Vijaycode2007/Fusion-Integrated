@@ -1,4 +1,5 @@
 """DRF Serializers for Leave Management."""
+
 from __future__ import annotations
 
 from rest_framework import serializers
@@ -133,11 +134,13 @@ class LeaveApplicationSerializer(serializers.ModelSerializer):
 
 
 class ApplyLeaveSerializer(serializers.Serializer):
-    category = serializers.ChoiceField(choices=["CL", "RH", "SCL", "EL", "VL", "COL"])
+    category = serializers.ChoiceField(choices=LeaveApplication.CATEGORIES)
     start_date = serializers.DateField()
     end_date = serializers.DateField()
     purpose = serializers.CharField(max_length=1000)
-    half_day_type = serializers.ChoiceField(choices=["full", "first_half", "second_half"], default="full")
+    half_day_type = serializers.ChoiceField(
+        choices=["full", "first_half", "second_half"], default="full"
+    )
     substitute_user_id = serializers.IntegerField(required=False, allow_null=True)
     responsibilities = serializers.CharField(required=False, allow_blank=True, default="")
     is_station_leave = serializers.BooleanField(default=False)
@@ -182,7 +185,9 @@ class ExtensionRequestSerializer(serializers.Serializer):
 class AdminConfigSerializer(serializers.Serializer):
     key = serializers.CharField(max_length=80)
     value = serializers.JSONField()
-    description = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    description = serializers.CharField(
+        max_length=255, required=False, allow_blank=True, default=""
+    )
 
 
 class HolidayCalendarEntrySerializer(serializers.Serializer):
@@ -214,7 +219,7 @@ class ResumptionSerializer(serializers.Serializer):
 
 class OfflineLeaveSerializer(serializers.Serializer):
     employee_user_id = serializers.IntegerField()
-    category = serializers.ChoiceField(choices=["CL", "RH", "SCL", "EL", "VL", "COL"])
+    category = serializers.ChoiceField(choices=LeaveApplication.CATEGORIES)
     start_date = serializers.DateField()
     end_date = serializers.DateField()
     days_count = serializers.DecimalField(max_digits=5, decimal_places=1)
@@ -231,3 +236,26 @@ class LeaveRecordCorrectionSerializer(serializers.Serializer):
     station_departure_date = serializers.DateField(required=False, allow_null=True)
     station_arrival_date = serializers.DateField(required=False, allow_null=True)
     station_destination = serializers.CharField(max_length=255, required=False, allow_blank=True)
+
+
+class RemarksSerializer(serializers.Serializer):
+    remarks = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class PublishCalendarSerializer(serializers.Serializer):
+    holiday_ids = serializers.ListField(child=serializers.IntegerField())
+
+
+class PublishCalendarResponseSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    published_count = serializers.IntegerField()
+
+
+class ConfigDetailSerializer(serializers.Serializer):
+    value = serializers.JSONField()
+    description = serializers.CharField(required=False, allow_blank=True)
+
+
+class HolidayCalendarViewResponseSerializer(serializers.Serializer):
+    holidays = HolidayCalendarSerializer(many=True)
+    vacation_periods = VacationPeriodSerializer(many=True)

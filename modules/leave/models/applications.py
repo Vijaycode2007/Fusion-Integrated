@@ -1,7 +1,9 @@
 """Leave applications model."""
+
 from __future__ import annotations
 
 from decimal import Decimal
+
 from django.db import models
 
 from core.db.mixins import TimeStampedModel, UserScopedModel
@@ -28,6 +30,7 @@ class LeaveApplication(TimeStampedModel, UserScopedModel):
     STATUS_CHOICES = [
         ("draft", "Draft"),
         ("substitute_pending", "Pending Substitute Consent"),
+        ("applicant_action_required", "Applicant Action Required"),
         ("under_review", "Under Review"),
         ("approved", "Approved"),
         ("rejected", "Rejected"),
@@ -36,6 +39,9 @@ class LeaveApplication(TimeStampedModel, UserScopedModel):
         ("cancelled", "Cancelled"),
         ("extension_requested", "Extension Requested"),
         ("resumption_submitted", "Resumption Submitted"),
+        ("resumption_reviewed_normal", "Resumption Reviewed — No Adjustment"),
+        ("resumption_reviewed_early", "Resumption Reviewed — Early Return Synchronized"),
+        ("resumption_reviewed_late", "Resumption Reviewed — Late Return Synchronized"),
         ("closed", "Closed"),
     ]
 
@@ -64,7 +70,6 @@ class LeaveApplication(TimeStampedModel, UserScopedModel):
 
     establishment_user_id = models.IntegerField(null=True, blank=True)
     establishment_remarks = models.TextField(blank=True)
-    establishment_reviewed_at = models.DateTimeField(null=True, blank=True)
     establishment_reviewed_at = models.DateTimeField(null=True, blank=True)
 
     sanctioning_authority_user_id = models.IntegerField(null=True, blank=True)

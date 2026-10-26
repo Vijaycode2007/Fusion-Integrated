@@ -26,6 +26,7 @@ function getStatusColor(status: string) {
       return "green";
     case "under_review":
     case "substitute_pending":
+    case "applicant_action_required":
     case "extension_requested":
       return "blue";
     case "rejected":
@@ -58,6 +59,9 @@ export default function MyLeavesPage() {
   const [extensionStart, setExtensionStart] = useState("");
   const [extensionEnd, setExtensionEnd] = useState("");
   const [extensionPurpose, setExtensionPurpose] = useState("");
+  const [replacementModalApp, setReplacementModalApp] = useState<LeaveApplication | null>(null);
+  const [replacementUserId, setReplacementUserId] = useState("");
+  const [replacementResponsibilities, setReplacementResponsibilities] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchApplications = async () => {
@@ -157,6 +161,32 @@ export default function MyLeavesPage() {
     }
   };
 
+  const handleReplacementSubmit = async () => {
+    const substituteUserId = Number(replacementUserId);
+    if (!replacementModalApp || !Number.isInteger(substituteUserId) || substituteUserId < 1) return;
+    try {
+      setActionLoading(true);
+      await leaveApi.reNominateSubstitute(
+        replacementModalApp.id,
+        substituteUserId,
+        replacementResponsibilities.trim(),
+      );
+      notifications.show({
+        title: "Replacement nominated",
+        message: "The request is waiting for the replacement substitute to respond.",
+        color: "teal",
+      });
+      setReplacementModalApp(null);
+      setReplacementUserId("");
+      setReplacementResponsibilities("");
+      fetchApplications();
+    } catch (err) {
+      notifications.show({ title: "Error", message: errorMessage(err), color: "red" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <Container size="xl">
       <PageHeader
@@ -205,9 +235,14 @@ export default function MyLeavesPage() {
                 <Group gap="xs">
                   <Button size="xs" variant="light" onClick={() => handleExport(r.id)}>Export</Button>
                   <Button size="xs" variant="subtle" onClick={() => handlePrint(r.id)}>Print</Button>
-                  {["substitute_pending", "under_review", "extension_requested"].includes(r.status) && (
+                  {["substitute_pending", "applicant_action_required", "under_review", "extension_requested"].includes(r.status) && (
                     <Button size="xs" variant="subtle" color="red" onClick={() => handleWithdraw(r.id)}>
                       Withdraw
+                    </Button>
+                  )}
+                  {r.status === "applicant_action_required" && (
+                    <Button size="xs" variant="light" onClick={() => setReplacementModalApp(r)}>
+                      Nominate Replacement
                     </Button>
                   )}
                   {r.status === "approved" && (
@@ -275,6 +310,37 @@ export default function MyLeavesPage() {
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setExtensionModalApp(null)}>Dismiss</Button>
             <Button onClick={handleExtensionSubmit} loading={actionLoading}>Submit Extension</Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal
+        opened={!!replacementModalApp}
+        onClose={() => setReplacementModalApp(null)}
+        title="Nominate a Replacement Substitute"
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            The previous substitute declined. Enter another active employee’s user ID to request coverage.
+          </Text>
+          <TextInput
+            type="number"
+            min={1}
+            label="Replacement employee user ID"
+            value={replacementUserId}
+            onChange={(e) => setReplacementUserId(e.currentTarget.value)}
+            required
+          />
+          <Textarea
+            label="Responsibilities"
+            value={replacementResponsibilities}
+            onChange={(e) => setReplacementResponsibilities(e.currentTarget.value)}
+          />
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setReplacementModalApp(null)}>Dismiss</Button>
+            <Button onClick={handleReplacementSubmit} loading={actionLoading}>
+              Send Substitute Request
+            </Button>
           </Group>
         </Stack>
       </Modal>

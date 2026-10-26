@@ -2,6 +2,7 @@
 
 Defines navigation items, module metadata, permissions, and role mappings.
 """
+
 from __future__ import annotations
 
 MODULE = {
@@ -56,7 +57,6 @@ NAV_ITEMS = [
         "required_permission": "leave.calendar.view",
         "sort_order": 50,
     },
-
     # -- Reviewers & Sanctioning Authorities --
     {
         "code": "leave.approvals",
@@ -66,7 +66,6 @@ NAV_ITEMS = [
         "required_permission": "leave.application.review",
         "sort_order": 60,
     },
-
     # -- Administration --
     {
         "code": "leave.admin",

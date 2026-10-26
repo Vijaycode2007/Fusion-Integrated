@@ -1,4 +1,5 @@
 """Leave categories and eligibility rules (BR-EL-001..009)."""
+
 from __future__ import annotations
 
 CL = "CL"
@@ -24,10 +25,8 @@ ANNUAL_ENTITLEMENTS = {
 
 
 def is_eligible_for_category(category: str, is_faculty: bool) -> bool:
-    """Validate whether employee is eligible for the requested category (BR-EL-001, BR-EL-005, BR-EL-006)."""
+    """Validate category eligibility (BR-EL-001, BR-EL-005, BR-EL-006)."""
     if category not in ALL_CATEGORIES:
         return False
-    if category == VL and not is_faculty:
-        # Vacation Leave is strictly for faculty
-        return False
-    return True
+    # Vacation Leave is strictly for faculty.
+    return category != VL or is_faculty

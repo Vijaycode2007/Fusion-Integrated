@@ -1,7 +1,9 @@
 """Substitute requests and responsibilities."""
+
 from __future__ import annotations
 
 from django.db import models
+
 from core.db.mixins import TimeStampedModel
 from modules.leave.models.applications import LeaveApplication
 
@@ -33,4 +35,6 @@ class SubstituteRequest(TimeStampedModel):
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
-        return f"sub#{self.pk} app#{self.application_id} to u{self.substitute_user_id} ({self.status})"
+        return (
+            f"sub#{self.pk} app#{self.application_id} to u{self.substitute_user_id} ({self.status})"
+        )

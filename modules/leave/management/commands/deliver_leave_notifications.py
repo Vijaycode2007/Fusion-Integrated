@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+
 from modules.leave.services.notifications import deliver_pending
 
 

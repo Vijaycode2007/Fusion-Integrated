@@ -1,8 +1,10 @@
 """Read queries for leave balances and ledger."""
+
 from __future__ import annotations
 
 import datetime
-from decimal import InvalidOperation
+from decimal import Decimal, InvalidOperation
+
 from django.db.models import QuerySet
 
 from modules.leave.models import LeaveBalance, LeaveLedgerEntry, LeavePolicyConfig
@@ -21,7 +23,9 @@ def configured_entitlements() -> dict[str, Decimal]:
     return result
 
 
-def get_or_create_balance(user_id: int, year: int | None = None, is_faculty: bool = False) -> LeaveBalance:
+def get_or_create_balance(
+    user_id: int, year: int | None = None, is_faculty: bool = False
+) -> LeaveBalance:
     """Retrieve or initialize the employee's leave balance for the year."""
     if year is None:
         year = datetime.date.today().year

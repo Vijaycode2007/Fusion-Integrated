@@ -1,10 +1,17 @@
 """Durable delivery queue for leave workflow notifications."""
+
 from django.db import models
+
 from core.db.mixins import TimeStampedModel
 
 
 class LeaveNotificationOutbox(TimeStampedModel):
-    STATUS = [("pending", "Pending"), ("sending", "Sending"), ("sent", "Sent"), ("failed", "Failed")]
+    STATUS = [
+        ("pending", "Pending"),
+        ("sending", "Sending"),
+        ("sent", "Sent"),
+        ("failed", "Failed"),
+    ]
     recipient_user_id = models.IntegerField(db_index=True)
     topic = models.CharField(max_length=50)
     dedupe_key = models.CharField(max_length=180, unique=True)

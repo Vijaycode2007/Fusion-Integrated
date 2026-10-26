@@ -80,6 +80,14 @@ export const leaveApi = {
     return res.data;
   },
 
+  reNominateSubstitute: async (id: number, substitute_user_id: number, responsibilities = "") => {
+    const res = await http.post<SubstituteRequest>(
+      `/leave/applications/${id}/renominate-substitute/`,
+      { substitute_user_id, responsibilities },
+    );
+    return res.data;
+  },
+
   getApprovalsQueue: async () => {
     const res = await http.get<LeaveApplication[]>("/leave/approvals/");
     return res.data;

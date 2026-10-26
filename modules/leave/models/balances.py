@@ -1,7 +1,9 @@
 """Leave balances and ledger tracking."""
+
 from __future__ import annotations
 
 from decimal import Decimal
+
 from django.db import models
 
 from core.db.mixins import TimeStampedModel, UserScopedModel
@@ -24,7 +26,9 @@ class LeaveBalance(TimeStampedModel, UserScopedModel):
     class Meta:
         db_table = "leave_balance"
         constraints = [
-            models.UniqueConstraint(fields=["user_id", "year"], name="leave_balance_unique_user_year"),
+            models.UniqueConstraint(
+                fields=["user_id", "year"], name="leave_balance_unique_user_year"
+            ),
         ]
         indexes = [
             models.Index(fields=["user_id", "year"], name="leave_balance_user_year_idx"),
@@ -60,7 +64,9 @@ class LeaveLedgerEntry(TimeStampedModel, UserScopedModel):
         ("adjustment", "Resumption Adjustment"),
     ]
 
-    balance = models.ForeignKey(LeaveBalance, on_delete=models.CASCADE, related_name="ledger_entries")
+    balance = models.ForeignKey(
+        LeaveBalance, on_delete=models.CASCADE, related_name="ledger_entries"
+    )
     category = models.CharField(max_length=10)
     entry_type = models.CharField(max_length=20, choices=TYPES)
     change_amount = models.DecimalField(max_digits=6, decimal_places=2)

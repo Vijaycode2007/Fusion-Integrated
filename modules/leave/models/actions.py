@@ -1,7 +1,9 @@
 """Audit log for workflow transitions and actions."""
+
 from __future__ import annotations
 
 from django.db import models
+
 from core.db.mixins import TimeStampedModel
 from modules.leave.models.applications import LeaveApplication
 

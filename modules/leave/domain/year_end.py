@@ -1,8 +1,9 @@
 """Year-end processing calculation (BR-EL-002, BR-EL-007, BR-EL-008, EL-UC-020)."""
+
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Dict, Any
+from typing import Any
 
 
 def compute_year_end_transition(
@@ -13,7 +14,7 @@ def compute_year_end_transition(
     vl: Decimal,
     col: Decimal,
     is_faculty: bool,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Calculate lapsed, converted, and carried-forward values for year end.
 
     CL, RH, SCL lapse.

@@ -1,10 +1,11 @@
 """Unit tests for leave-day calculation (BR-EL-010, BR-EL-011)."""
+
 import datetime
 from decimal import Decimal
+
 import pytest
 
-from core.api.exceptions import BadRequestError
-from modules.leave.domain.counting import calculate_leave_days
+from modules.leave.domain import LeaveCalculationError, calculate_leave_days
 
 
 def test_cl_half_day():
@@ -15,14 +16,14 @@ def test_cl_half_day():
 
 def test_half_day_not_allowed_for_el():
     d = datetime.date(2026, 10, 12)
-    with pytest.raises(BadRequestError):
+    with pytest.raises(LeaveCalculationError):
         calculate_leave_days("EL", d, d, half_day_type="first_half")
 
 
 def test_continuous_counting_for_el_includes_weekends():
     # Friday to Monday = 4 continuous days
     start = datetime.date(2026, 10, 16)  # Friday
-    end = datetime.date(2026, 10, 19)    # Monday
+    end = datetime.date(2026, 10, 19)  # Monday
     days = calculate_leave_days("EL", start, end)
     assert days == Decimal("4.0")
 
@@ -30,7 +31,7 @@ def test_continuous_counting_for_el_includes_weekends():
 def test_working_days_counting_for_cl_excludes_weekends():
     # Friday to Monday = only Friday and Monday (2 working days)
     start = datetime.date(2026, 10, 16)  # Friday
-    end = datetime.date(2026, 10, 19)    # Monday
+    end = datetime.date(2026, 10, 19)  # Monday
     days = calculate_leave_days("CL", start, end)
     assert days == Decimal("2.0")
 
@@ -42,5 +43,5 @@ def test_rh_must_match_calendar():
     assert days == Decimal("1.0")
 
     # Invalid non-RH date
-    with pytest.raises(BadRequestError):
+    with pytest.raises(LeaveCalculationError):
         calculate_leave_days("RH", rh_date, rh_date, rh_holidays=set())

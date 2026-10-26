@@ -1,7 +1,9 @@
 """Year-end automated batch processing (EL-UC-020, BR-EL-002, BR-EL-007, BR-EL-008)."""
+
 from __future__ import annotations
 
 from decimal import Decimal
+
 from django.db import transaction
 
 from modules.leave.domain.year_end import compute_year_end_transition
@@ -16,7 +18,8 @@ def run_year_end_processing(current_year: int) -> int:
 
     for employee in directory.get_employees():
         get_or_create_balance(
-            employee.user_id, year=current_year,
+            employee.user_id,
+            year=current_year,
             is_faculty=employee.kind == "faculty",
         )
     balances = LeaveBalance.objects.select_for_update().filter(
@@ -68,9 +71,13 @@ def run_year_end_processing(current_year: int) -> int:
 
         if res["lapsed_vl"] > Decimal("0.0"):
             LeaveLedgerEntry.objects.create(
-                balance=old_bal, user_id=old_bal.user_id, category="VL",
-                entry_type="lapse", change_amount=-res["lapsed_vl"],
-                balance_after=Decimal("0.0"), remarks="Year-end VL lapse",
+                balance=old_bal,
+                user_id=old_bal.user_id,
+                category="VL",
+                entry_type="lapse",
+                change_amount=-res["lapsed_vl"],
+                balance_after=Decimal("0.0"),
+                remarks="Year-end VL lapse",
             )
 
         old_bal.cl_balance = Decimal("0.0")
@@ -91,7 +98,9 @@ def run_year_end_processing(current_year: int) -> int:
                 "cl_balance": annual["CL"],
                 "rh_balance": annual["RH"],
                 "scl_balance": annual["SCL"],
-                "el_balance": res["carried_el"] if old_bal.is_faculty else res["carried_el"] + annual["EL"],
+                "el_balance": res["carried_el"]
+                if old_bal.is_faculty
+                else res["carried_el"] + annual["EL"],
                 "vl_balance": annual["VL"] if old_bal.is_faculty else Decimal("0.0"),
                 "col_balance": res["carried_col"] + annual["COL"],
             },
@@ -111,8 +120,11 @@ def run_year_end_processing(current_year: int) -> int:
         ):
             if amount > Decimal("0.0"):
                 LeaveLedgerEntry.objects.create(
-                    balance=next_bal, user_id=old_bal.user_id, category=category,
-                    entry_type="credit", change_amount=amount,
+                    balance=next_bal,
+                    user_id=old_bal.user_id,
+                    category=category,
+                    entry_type="credit",
+                    change_amount=amount,
                     balance_after=next_bal.get_category_balance(category),
                     remarks=f"Year {next_year} annual grant and carry-forward",
                 )

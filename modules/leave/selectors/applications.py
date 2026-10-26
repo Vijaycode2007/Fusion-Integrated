@@ -1,8 +1,10 @@
 """Read queries for leave applications."""
+
 from __future__ import annotations
 
 import datetime
-from django.db.models import Q, QuerySet
+
+from django.db.models import QuerySet
 
 from core.api.exceptions import NotFoundError
 from modules.leave.models import LeaveApplication
@@ -13,14 +15,24 @@ def get_my_applications(user_id: int) -> QuerySet[LeaveApplication]:
     return LeaveApplication.objects.filter(user_id=user_id).order_by("-created_at")
 
 
-def get_application_by_id(application_id: int, user_id: int | None = None) -> LeaveApplication:
+def get_application_by_id(
+    application_id: int,
+    user_id: int | None = None,
+    *,
+    for_update: bool = False,
+) -> LeaveApplication:
     """Fetch application with optional user ownership check."""
     try:
+        applications = (
+            LeaveApplication.objects.select_for_update() if for_update else LeaveApplication.objects
+        )
         if user_id is not None:
-            return LeaveApplication.objects.get(pk=application_id, user_id=user_id)
-        return LeaveApplication.objects.get(pk=application_id)
+            return applications.get(pk=application_id, user_id=user_id)
+        return applications.get(pk=application_id)
     except LeaveApplication.DoesNotExist:
-        raise NotFoundError(f"Leave application #{application_id} not found.", code="application_not_found")
+        raise NotFoundError(
+            f"Leave application #{application_id} not found.", code="application_not_found"
+        ) from None
 
 
 def get_active_overlapping_leaves(
@@ -30,7 +42,13 @@ def get_active_overlapping_leaves(
     exclude_id: int | None = None,
 ) -> QuerySet[LeaveApplication]:
     """Find active pending or approved leaves that overlap the date interval (BR-EL-012)."""
-    active_statuses = {"substitute_pending", "under_review", "approved", "extension_requested"}
+    active_statuses = {
+        "substitute_pending",
+        "applicant_action_required",
+        "under_review",
+        "approved",
+        "extension_requested",
+    }
     qs = LeaveApplication.objects.filter(
         user_id=user_id,
         status__in=active_statuses,

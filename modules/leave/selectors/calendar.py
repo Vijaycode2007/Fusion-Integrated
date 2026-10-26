@@ -1,7 +1,9 @@
 """Read queries for holidays and vacation periods."""
+
 from __future__ import annotations
 
 import datetime
+
 from django.db.models import QuerySet
 
 from modules.leave.models import HolidayCalendar, VacationPeriod

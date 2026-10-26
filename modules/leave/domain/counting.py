@@ -1,16 +1,16 @@
 """Leave day calculation logic (BR-EL-010, BR-EL-011)."""
+
 from __future__ import annotations
 
 import datetime
 from decimal import Decimal
-from typing import Set
 
-from core.api.exceptions import BadRequestError
 from modules.leave.domain.categories import (
     CL,
     CONTINUOUS_COUNT_CATEGORIES,
     RH,
 )
+from modules.leave.domain.exceptions import LeaveCalculationError
 
 
 def calculate_leave_days(
@@ -18,8 +18,8 @@ def calculate_leave_days(
     start_date: datetime.date,
     end_date: datetime.date,
     half_day_type: str = "full",
-    closed_holidays: Set[datetime.date] | None = None,
-    rh_holidays: Set[datetime.date] | None = None,
+    closed_holidays: set[datetime.date] | None = None,
+    rh_holidays: set[datetime.date] | None = None,
 ) -> Decimal:
     """Calculate the deductible days count for a given leave range.
 
@@ -30,13 +30,20 @@ def calculate_leave_days(
     BR-EL-003: RH must correspond to an applicable Restricted Holiday in the calendar.
     """
     if end_date < start_date:
-        raise BadRequestError("End date cannot be earlier than start date.", code="invalid_dates")
+        raise LeaveCalculationError(
+            "End date cannot be earlier than start date.", code="invalid_dates"
+        )
 
     if half_day_type in ("first_half", "second_half"):
         if category != CL:
-            raise BadRequestError("Half-day leave is only permitted for Casual Leave (CL).", code="half_day_not_cl")
+            raise LeaveCalculationError(
+                "Half-day leave is only permitted for Casual Leave (CL).", code="half_day_not_cl"
+            )
         if start_date != end_date:
-            raise BadRequestError("Half-day leave must start and end on the same single date.", code="half_day_single_day")
+            raise LeaveCalculationError(
+                "Half-day leave must start and end on the same single date.",
+                code="half_day_single_day",
+            )
         return Decimal("0.5")
 
     if category in CONTINUOUS_COUNT_CATEGORIES:
@@ -61,16 +68,18 @@ def calculate_leave_days(
     if category == RH:
         rh_holidays = rh_holidays or set()
         if start_date != end_date:
-            raise BadRequestError("Restricted Holiday must be taken 1 day at a time.", code="rh_single_day")
+            raise LeaveCalculationError(
+                "Restricted Holiday must be taken 1 day at a time.", code="rh_single_day"
+            )
         if start_date not in rh_holidays:
-            raise BadRequestError(
+            raise LeaveCalculationError(
                 f"Date {start_date} is not listed as an active Restricted Holiday (RH).",
                 code="not_a_restricted_holiday",
             )
         return Decimal("1.0")
 
     if total_days == 0:
-        raise BadRequestError(
+        raise LeaveCalculationError(
             "Selected dates fall entirely on weekends or closed holidays.",
             code="zero_deductible_days",
         )

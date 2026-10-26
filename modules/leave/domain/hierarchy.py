@@ -1,4 +1,5 @@
 """Approval authority determination (BR-EL-016..020)."""
+
 from __future__ import annotations
 
 from modules.leave.domain.categories import CL, RH

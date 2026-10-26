@@ -1,7 +1,9 @@
 """Configurable policy parameters and SLA thresholds."""
+
 from __future__ import annotations
 
 from django.db import models
+
 from core.db.mixins import TimeStampedModel
 
 
